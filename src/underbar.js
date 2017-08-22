@@ -50,8 +50,8 @@
   // Note: _.each does not have a return value, but rather simply runs the
   // iterator function over each item in the input collection.
   _.each = function(collection, iterator) {
-    if(Array.isArray(collection)) {
-      for(let i = 0; i < collection.length; i++) {
+    if (Array.isArray(collection)) {
+      for (let i = 0; i < collection.length; i++) {
         iterator(collection[i], i, collection);
       }
     } else {
@@ -109,7 +109,7 @@
     let result = [];
     let set = new Set();
     _.each(array, (el) => {
-      if(!set.has(iterator(el))) {
+      if (!set.has(iterator(el))) {
         result.push(el);
         set.add(iterator(el));
       }
@@ -172,21 +172,21 @@
   _.reduce = function(collection, iterator, accumulator=undefined) {
     let result;
     let start = 0;
-    if(Array.isArray(collection)) {
+    if (Array.isArray(collection)) {
       if (accumulator === undefined) {
         start++;
         accumulator = collection[0];
       }
-      for(let i = start; i < collection.length; i++) {
+      for (let i = start; i < collection.length; i++) {
         accumulator = iterator(accumulator, collection[i]);
       }
     } else {
       let keys = Object.keys(collection);
-      if (!accumulator) {
+      if (accumulator === undefined) {
         start++;
         accumulator = collection[keys[0]];
       }
-      for(let i = start; i < keys.length; i++) {
+      for (let i = start; i < keys.length; i++) {
         accumulator = iterator(accumulator, collection[keys[i]]);
       }
     }
@@ -198,7 +198,7 @@
   _.contains = function(collection, target) {
     // TIP: Many iteration problems can be most easily expressed in
     // terms of reduce(). Here's a freebie to demonstrate!
-    return _.reduce(collection, function(wasFound, item) {
+    return _.reduce(collection, (wasFound, item) => {
       if (wasFound) {
         return true;
       }
@@ -208,14 +208,24 @@
 
 
   // Determine whether all of the elements match a truth test.
-  _.every = function(collection, iterator) {
+  _.every = function(collection, iterator=_.identity) {
     // TIP: Try re-using reduce() here.
+    // let isFailed = false;
+    return _.reduce(collection, (wasFound, item) => {
+      if (!wasFound) {
+        return false;
+      }
+      return !!iterator(item);
+    }, true);
   };
 
   // Determine whether any of the elements pass a truth test. If no iterator is
   // provided, provide a default one
-  _.some = function(collection, iterator) {
+  _.some = function(collection, iterator=_.identity) {
     // TIP: There's a very clever way to re-use every() here.
+    return !_.every(collection, (el) => {
+      return !iterator(el);
+    });
   };
 
 
