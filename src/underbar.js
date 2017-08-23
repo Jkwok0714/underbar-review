@@ -101,7 +101,7 @@
   };
 
   // Produce a duplicate-free version of the array.
-  _.uniq = function(array, isSorted, iterator=undefined) {
+  _.uniq = function(array, isSorted, iterator = undefined) {
     if (iterator === undefined) {
       let set = new Set(array);
       return [...set];
@@ -169,7 +169,7 @@
   //     return total + number * number;
   //   }); // should be 5, regardless of the iterator function passed in
   //          No accumulator is given so the first element is used.
-  _.reduce = function(collection, iterator, accumulator=undefined) {
+  _.reduce = function(collection, iterator, accumulator = undefined) {
     let result;
     let start = 0;
     if (Array.isArray(collection)) {
@@ -208,7 +208,7 @@
 
 
   // Determine whether all of the elements match a truth test.
-  _.every = function(collection, iterator=_.identity) {
+  _.every = function(collection, iterator = _.identity) {
     // TIP: Try re-using reduce() here.
     // let isFailed = false;
     return _.reduce(collection, (wasFound, item) => {
@@ -221,7 +221,7 @@
 
   // Determine whether any of the elements pass a truth test. If no iterator is
   // provided, provide a default one
-  _.some = function(collection, iterator=_.identity) {
+  _.some = function(collection, iterator = _.identity) {
     // TIP: There's a very clever way to re-use every() here.
     return !_.every(collection, (el) => {
       return !iterator(el);
@@ -249,7 +249,7 @@
   //   }); // obj1 now contains key1, key2, key3 and bla
   _.extend = function(obj, ...args) {
     _.each(args, (arg) => {
-      for(let key in arg) {
+      for (let key in arg) {
         obj[key] = arg[key];
       }
     });
@@ -261,8 +261,8 @@
   // exists in obj
   _.defaults = function(obj, ...args) {
     _.each(args, (arg) => {
-      for(let key in arg) {
-        if(obj[key] === undefined) {
+      for (let key in arg) {
+        if (obj[key] === undefined) {
           obj[key] = arg[key];
         }
       }
@@ -317,14 +317,14 @@
 
     return function() {
       let args = JSON.stringify(arguments);
-      if(cache[args] === undefined) {
+      if (cache[args] === undefined) {
         result = func.apply(this, arguments);
         cache[args] = result;
         return result;
       } else {
         return cache[args];
       }
-    }
+    };
   };
 
   // Delays a function for the given number of milliseconds, and then calls
@@ -349,6 +349,13 @@
   // input array. For a tip on how to make a copy of an array, see:
   // http://mdn.io/Array.prototype.slice
   _.shuffle = function(array) {
+    let result = array.slice();
+    for (let i = result.length - 1; i > 0; i--) {
+      let random = Math.floor(Math.random() * (i - 1));
+      [result[i], result[random]] = [result[random], result[i]];
+    }
+
+    return result;
   };
 
 
@@ -362,14 +369,48 @@
 
   // Calls the method named by functionOrKey on each value in the list.
   // Note: You will need to learn a bit about .apply to complete this.
-  _.invoke = function(collection, functionOrKey, args) {
+  _.invoke = function(collection, functionOrKey, ...args) {
+    const method = typeof functionOrKey === 'string' ? collection[0][functionOrKey] : functionOrKey;
+    const result = _.map(collection, (el) => {
+      return method.apply(el, ...args);
+    });
+
+    return result;
   };
 
   // Sort the object's values by a criterion produced by an iterator.
   // If iterator is a string, sort objects by that property with the name
   // of that string. For example, _.sortBy(people, 'name') should sort
   // an array of people by their name.
-  _.sortBy = function(collection, iterator) {
+  _.sortBy = function(collection, iterator = _.identity) {
+    const method = typeof iterator === 'string' ? (el) => el[iterator] : iterator;
+    const recurse = function recurseToSort(collection, low, high) {
+      if (low < high) {
+        const pi = partition(collection, low, high);
+
+        recurse(collection, low, pi - 1);
+        recurse(collection, pi + 1, high);
+      } else {
+        return;
+      }
+    };
+
+    const partition = function sortPartition(collection, low, high) {
+      let lowFlag = low - 1;
+      const pivotVal = method(collection[high]);
+      for (let i = low; i < high; i++) {
+        const curVal = method(collection[i]);
+        if (curVal <= pivotVal) {
+          lowFlag++;
+          [collection[lowFlag], collection[i]] = [collection[i], collection[lowFlag]];
+        }
+      }
+      [collection[lowFlag + 1], collection[high]] = [collection[high], collection[lowFlag + 1]];
+      return lowFlag + 1;
+    };
+    recurse(collection, 0, collection.length - 1);
+
+    return collection;
   };
 
   // Zip together two or more arrays with elements of the same index
