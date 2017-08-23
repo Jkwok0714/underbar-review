@@ -150,7 +150,7 @@
       });
 
 
-      it('should return a function callable twice in the first 200ms', function() {
+      it('should return a function callable thrice in the first 200ms', function() {
         var fn = _.throttle(callback, 100);
         fn(); // called
         setTimeout(fn, 50);
@@ -159,7 +159,7 @@
         setTimeout(fn, 199);
         clock.tick(200);
 
-        expect(callback).to.have.been.calledTwice;
+        expect(callback).to.have.been.calledThrice;
       });
 
     });
