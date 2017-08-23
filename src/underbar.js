@@ -418,14 +418,39 @@
   //
   // Example:
   // _.zip(['a','b','c','d'], [1,2,3]) returns [['a',1], ['b',2], ['c',3], ['d',undefined]]
-  _.zip = function() {
+  _.zip = function(...args) {
+    let max = args[0].length;
+    _.each(args, (el) => {
+      if (el.length > max) {
+        max = el.length;
+      }
+    });
+    let result = [];
+    for (let i = 0; i < max; i++) {
+      let temp = [];
+      _.each(args, (el) => {
+        temp.push(el[i]);
+      })
+      result.push(temp);
+    }
+
+    return result;
   };
 
   // Takes a multidimensional array and converts it to a one-dimensional array.
   // The new array should contain all elements of the multidimensional array.
   //
   // Hint: Use Array.isArray to check if something is an array
-  _.flatten = function(nestedArray, result) {
+  _.flatten = function(nestedArray, result = []) {
+    _.each(nestedArray, (el) => {
+      if (Array.isArray(el)) {
+        result = _.flatten(el, result);
+      } else {
+        result.push(el);
+      }
+    })
+
+    return result;
   };
 
   // Takes an arbitrary number of arrays and produces an array that contains
@@ -442,7 +467,7 @@
       let match = args[0][i];
       let isFound = true;
       for (let j = 1; j < args.length; j++) {
-        let curVal = args[j][pointer[j]]
+        let curVal = args[j][pointer[j]];
         if (curVal === match) {
           continue;
         } else if (curVal < match) {
@@ -482,7 +507,7 @@
       let match = array[i];
       let isFound = false;
       for (let j = 0; j < args.length; j++) {
-        let curVal = args[j][pointer[j]]
+        let curVal = args[j][pointer[j]];
         if (curVal === match) {
           isFound = true;
           break;
@@ -511,5 +536,24 @@
   //
   // Note: This is difficult! It may take a while to implement.
   _.throttle = function(func, wait) {
+    let inTimeout = false;
+    let calledDuringTimeout = false;
+
+    return function decorator() {
+      if (!inTimeout) {
+        inTimeout = true;
+        setTimeout(() => {
+          inTimeout = false;
+          if (calledDuringTimeout) {
+            decorator();
+            calledDuringTimeout = false;
+          }
+        }, wait);
+        return func.apply(this);
+      } else {
+        calledDuringTimeout = true;
+        return;
+      }
+    };
   };
 }());
