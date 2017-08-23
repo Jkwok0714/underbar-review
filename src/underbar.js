@@ -430,12 +430,79 @@
 
   // Takes an arbitrary number of arrays and produces an array that contains
   // every item shared between all the passed-in arrays.
-  _.intersection = function() {
+  _.intersection = function(...args) {
+    let result = [];
+
+    args = _.sortBy(args, (el) => {
+      el = _.sortBy(el, (cur) => cur);
+      return el.length;
+    });
+    let pointer = new Array(args.length).fill(0);
+    for (let i = 0; i < args[0].length; i++) {
+      let match = args[0][i];
+      let isFound = true;
+      for (let j = 1; j < args.length; j++) {
+        let curVal = args[j][pointer[j]]
+        if (curVal === match) {
+          continue;
+        } else if (curVal < match) {
+          while (curVal < match && pointer[j] < args[j].length) {
+            pointer[j]++;
+            curVal = args[j][pointer[j]];
+          }
+          if (curVal === match) {
+            continue;
+          } else if (pointer[j] === args[j].length) {
+            return result;
+          } else {
+            isFound = false;
+            break;
+          }
+        }
+      }
+      if (isFound) {
+        result.push(match);
+      }
+    }
+
+    return result;
   };
 
   // Take the difference between one array and a number of other arrays.
   // Only the elements present in just the first array will remain.
-  _.difference = function(array) {
+  _.difference = function(array, ...args) {
+
+    let result = [];
+    _.each(args, (el) => {
+      return el = _.sortBy(el, (cur) => cur);
+    });
+
+    let pointer = new Array(args.length).fill(0);
+    for (let i = 0; i < array.length; i++) {
+      let match = array[i];
+      let isFound = false;
+      for (let j = 0; j < args.length; j++) {
+        let curVal = args[j][pointer[j]]
+        if (curVal === match) {
+          isFound = true;
+          break;
+        } else if (curVal < match) {
+          while (curVal < match && pointer[j] < args[j].length) {
+            pointer[j]++;
+            curVal = args[j][pointer[j]];
+          }
+          if (curVal === match) {
+            isFound = true;
+            break;
+          }
+        }
+      }
+      if (!isFound) {
+        result.push(match);
+      }
+    }
+
+    return result;
   };
 
   // Returns a function, that, when invoked, will only be triggered at most once
